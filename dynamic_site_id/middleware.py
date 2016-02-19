@@ -15,11 +15,9 @@ class DynamicSiteIDMiddleware(object):
     def process_request(self, request):
         # Ignore port if it's 80 or 443
         if ':' in request.get_host():
-            domain, port = request.get_host().split(':')
-            if int(port) not in (80, 443):
-                domain = request.get_host()
+            domain, port = request.get_host().split(':', 1)
         else:
-            domain = request.get_host().split(':')[0]
+            domain = request.get_host()
 
         # Domains are case insensitive
         domain = domain.lower()
