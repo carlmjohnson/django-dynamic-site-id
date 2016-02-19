@@ -8,13 +8,13 @@ try:
 except:
     pass
 
-setup(name='djangotoolbox',
-    version='1.8.0',
+setup(name='django-dynamic-site-id',
+    version='0.0.1',
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     author='Waldemar Kornewald',
     author_email='wkornewald@gmail.com',
-    url='https://github.com/django-nonrel/djangotoolbox',
+    url='https://github.com/carlmjohnson/django-dynamic-site-id',
     packages=find_packages(),
     license='3-clause BSD',
     zip_safe=False,

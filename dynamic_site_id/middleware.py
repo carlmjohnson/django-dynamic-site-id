@@ -1,7 +1,8 @@
 from django.conf import settings
-from django.core.cache import cache
 from django.contrib.sites.models import Site
-from djangotoolbox.utils import make_tls_property
+from django.core.cache import cache
+
+from .utils import make_tls_property
 
 
 _default_site_id = getattr(settings, 'SITE_ID', None)
