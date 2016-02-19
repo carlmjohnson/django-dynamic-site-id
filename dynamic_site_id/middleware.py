@@ -9,6 +9,42 @@ _default_site_id = getattr(settings, 'SITE_ID', None)
 SITE_ID = settings.__class__.SITE_ID = make_tls_property()
 
 
+def _get_site(domain):
+    """
+    First try to look up the site by domain. If that fails, try
+    searching for the site's domain minus any ignorable prefixes or
+    suffixes, like www. or .local, as set in
+    settings.IGNORABLE_SITE_PREFIXES and IGNORABLE_SITE_SUFFIXES. Return
+    None if nothing is found.
+    """
+    try:
+        return Site.objects.get(domain=domain)
+    except Site.DoesNotExist:
+        pass
+
+    ignorable_site_prefixes = getattr(settings, 'IGNORABLE_SITE_PREFIXES', [
+        'www.',
+    ])
+
+    for prefix in ignorable_site_prefixes:
+        if domain.startswith(prefix):
+            try:
+                return Site.objects.get(domain=domain[len(prefix):])
+            except Site.DoesNotExist:
+                pass
+
+    ignorable_site_suffixes = getattr(settings, 'IGNORABLE_SITE_SUFFIXES', [
+        '.local',
+    ])
+
+    for suffix in ignorable_site_suffixes:
+        if domain.endswith(suffix):
+            try:
+                return Site.objects.get(domain=domain[:-len(suffix)])
+            except Site.DoesNotExist:
+                pass
+
+
 class DynamicSiteIDMiddleware(object):
     """Sets settings.SITE_ID based on request's domain."""
 
@@ -28,22 +64,7 @@ class DynamicSiteIDMiddleware(object):
         if site:
             SITE_ID.value = site
         else:
-            try:
-                site = Site.objects.get(domain=domain)
-            except Site.DoesNotExist:
-                site = None
-
-            if not site:
-                # Fall back to with/without 'www.'
-                if domain.startswith('www.'):
-                    fallback_domain = domain[4:]
-                else:
-                    fallback_domain = 'www.' + domain
-
-                try:
-                    site = Site.objects.get(domain=fallback_domain)
-                except Site.DoesNotExist:
-                    site = None
+            site = _get_site(domain)
 
             # Add site if it doesn't exist
             if not site and getattr(settings, 'CREATE_SITES_AUTOMATICALLY',
